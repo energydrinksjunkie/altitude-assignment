@@ -1,15 +1,14 @@
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoutes');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/altitude', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+mongoose.connect(process.env.MONGO_URI);
 
 app.use('/api/users', userRoutes);
 

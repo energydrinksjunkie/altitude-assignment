@@ -2,6 +2,9 @@ const express = require('express');
 const bycrypt = require('bcrypt');
 const User = require('../models/userModel');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const upload = require('../middleware/uploadMiddleware');
+const auth = require('../middleware/authMiddleware');
 
 router.post('/register', async (req, res) => {
     try {
@@ -34,7 +37,18 @@ router.post('/login', async (req, res) => {
         if (!user.isVerified) {
             throw new Error('User is not verified');
         }
-        res.status(200).json({ message: 'User logged in successfully' });
+        const token = jwt.sign( { id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).json({ token: token });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.post('/uploadProfilePicture', auth, upload, async (req, res) => {
+    try {
+        req.user.profilePicture = req.file.path;
+        await req.user.save();
+        res.status(200).json({ message: 'Profile picture uploaded successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
