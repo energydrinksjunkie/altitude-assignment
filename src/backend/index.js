@@ -1,11 +1,18 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const userRoutes = require('./routes/userRoutes');
 const app = express();
-const port = 3000;
+const PORT = 3000;
 
-app.get('/', (req, res) => {
-    res.send('test inicijalizacija');
-    });
+app.use(express.json());
 
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+mongoose.connect('mongodb://localhost:27017/altitude', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
+
+app.use('/api/users', userRoutes);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
