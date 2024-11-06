@@ -1,310 +1,136 @@
-# API Documentation
+# API Endpoints - /api/users
 
-## Register User
-- **Endpoint**: `POST /api/users/register`
-- **Description**: Registers a new user with the provided information.
+## POST /register
+- **Description**: Register a new user.
 - **Request Body**:
-    ```json
-    {
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
-      "password": "string",
-      "dateOfBirth": "date"
-    }
-    ```
-- **Response**:
-    - **201 Created**: 
-    ```json
-    {
-      "message": "User created successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+  - `firstName`: User's first name
+  - `lastName`: User's last name
+  - `email`: User's email
+  - `password`: User's password
+  - `dateOfBirth`: User's date of birth
+- **Response**: 
+  - `201 Created`: User created successfully and verification email sent.
+  - `400 Bad Request`: Validation or other errors.
 
----
-
-## Login User
-- **Endpoint**: `POST /api/users/login`
-- **Description**: Logs the user in with email and password, and optionally a 2FA token.
+## POST /login
+- **Description**: User login with email, password, and an optional 2FA token.
 - **Request Body**:
-    ```json
-    {
-      "email": "string",
-      "password": "string",
-      "token": "string (optional)"
-    }
-    ```
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "token": "JWT token"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+  - `email`: User's email
+  - `password`: User's password
+  - `token`: Optional 2FA token
+- **Response**: 
+  - `200 OK`: JWT token.
+  - `400 Bad Request`: Invalid credentials or other errors.
 
----
+## GET /google
+- **Description**: Redirect to Google OAuth login.
+- **Response**: Redirect to Google OAuth.
 
-## Upload Profile Picture
-- **Endpoint**: `POST /api/users/uploadProfilePicture`
-- **Description**: Allows the user to upload a profile picture.
-- **Request Body**: `multipart/form-data` (file)
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "Profile picture uploaded successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+## GET /google/callback
+- **Description**: Google OAuth callback to authenticate the user.
+- **Response**: 
+  - `200 OK`: JWT token.
+  - `401 Unauthorized`: If authentication fails.
 
----
+## POST /uploadProfilePicture
+- **Description**: Upload a new profile picture.
+- **Request Body**: Multipart file upload
+- **Response**: 
+  - `200 OK`: Profile picture uploaded successfully.
+  - `400 Bad Request`: File upload error.
 
-## Change Password
-- **Endpoint**: `POST /api/users/changePassword`
-- **Description**: Allows the user to change their password.
+## POST /changePassword
+- **Description**: Change the user's password.
 - **Request Body**:
-    ```json
-    {
-      "oldPassword": "string",
-      "newPassword": "string"
-    }
-    ```
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "Password changed successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+  - `oldPassword`: Current password
+  - `newPassword`: New password
+- **Response**: 
+  - `200 OK`: Password changed successfully.
+  - `400 Bad Request`: Incorrect current password or other errors.
 
----
-
-## Update Profile
-- **Endpoint**: `PUT /api/users/updateProfile`
-- **Description**: Updates the user's profile information.
+## PUT /updateProfile
+- **Description**: Update user's profile details.
 - **Request Body**:
-    ```json
-    {
-      "firstName": "string",
-      "lastName": "string",
-      "dateOfBirth": "date"
-    }
-    ```
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "Profile updated successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+  - `firstName`: Updated first name
+  - `lastName`: Updated last name
+  - `dateOfBirth`: Updated date of birth
+- **Response**: 
+  - `200 OK`: Profile updated successfully.
+  - `400 Bad Request`: Validation errors.
 
----
+## GET /getProfile
+- **Description**: Get the user's profile details.
+- **Response**: 
+  - `200 OK`: Profile details.
+  - `400 Bad Request`: Error retrieving profile.
 
-## Get Profile
-- **Endpoint**: `GET /api/users/getProfile`
-- **Description**: Retrieves the user's profile information.
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "firstName": "string",
-      "lastName": "string",
-      "email": "string",
-      "dateOfBirth": "date",
-      "profilePicture": "string (URL)"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+## GET /users
+- **Description**: Get a list of users with optional filters.
+- **Query Params**: 
+  - `isVerified`: Optional filter (`true` or `false`)
+- **Response**: 
+  - `200 OK`: List of users.
 
----
+## DELETE /deleteUser/:id
+- **Description**: Delete a user by ID (admin only).
+- **Response**: 
+  - `200 OK`: User deleted successfully.
+  - `400 Bad Request`: User not found or unauthorized action.
 
-## Users List (Admin)
-- **Endpoint**: `GET /api/users/users`
-- **Description**: Retrieves a list of users (Admin-only endpoint).
-- **Query Parameters**:
-    - `isVerified` (optional): Filter by verification status. Accepts `true` or `false`.
-- **Response**:
-    - **200 OK**:
-    ```json
-    [
-      {
-        "_id": "string",
-        "firstName": "string",
-        "lastName": "string",
-        "email": "string",
-        "isVerified": "boolean"
-      }
-    ]
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+## GET /verify/:token
+- **Description**: Verify user email with the provided token.
+- **Response**: 
+  - `200 OK`: User verified successfully.
+  - `400 Bad Request`: Invalid or expired token.
 
----
+## GET /resendVerificationEmail/:email
+- **Description**: Resend verification email to the user.
+- **Response**: 
+  - `200 OK`: Verification email resent successfully.
+  - `400 Bad Request`: User not found or already verified.
 
-## Delete User (Admin)
-- **Endpoint**: `DELETE /api/users/deleteUser/:id`
-- **Description**: Marks a user as deleted (Admin-only endpoint).
-- **Parameters**:
-    - `id` (URL parameter): The ID of the user to be deleted.
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "User deleted successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+## GET /forgotPasswordVerify/:token
+- **Description**: Verify the user's forgot password token.
+- **Response**: 
+  - `200 OK`: Token is valid.
+  - `400 Bad Request`: Invalid or expired token.
 
----
+## GET /resendForgotPassword/:email
+- **Description**: Resend the forgot password reset email.
+- **Response**: 
+  - `200 OK`: Password reset email resent.
+  - `400 Bad Request`: User not found.
 
-## Verify User Email
-- **Endpoint**: `GET /api/users/verify/:token`
-- **Description**: Verifies the user's email using the provided token.
-- **Parameters**:
-    - `token` (URL parameter): The token to verify the email.
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "User verified successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
-
----
-
-## Resend Verification Email
-- **Endpoint**: `GET /api/users/resendVerificationEmail/:email`
-- **Description**: Resends the verification email if the user hasn't verified their email yet.
-- **Parameters**:
-    - `email` (URL parameter): The email of the user.
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "Verification email sent successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
-
----
-
-## Forgot Password
-- **Endpoint**: `POST /api/users/forgotPassword`
-- **Description**: Allows the user to reset their password.
+## POST /forgotPassword
+- **Description**: Reset the user's password.
 - **Request Body**:
-    ```json
-    {
-      "password": "string"
-    }
-    ```
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "Password reset successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+  - `password`: New password
+- **Response**: 
+  - `200 OK`: Password reset successfully.
+  - `400 Bad Request`: Validation errors.
 
----
+## GET /generateTwoFactorAuthApp
+- **Description**: Generate a 2FA QR code for an authenticator app.
+- **Response**: 
+  - `200 OK`: QR code for 2FA setup.
+  - `400 Bad Request`: Error generating QR code.
 
-## Generate Two Factor Authentication (2FA)
-- **Endpoint**: `GET /api/users/generateTwoFactorAuth`
-- **Description**: Generates a 2FA secret and returns a QR code for the user to scan with their authenticator app.
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "qrCode": "string (QR Code URL)"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+## GET /generateTwoFactorAuthEmail
+- **Description**: Generate a 2FA code sent via email.
+- **Response**: 
+  - `200 OK`: 2FA code sent successfully.
+  - `400 Bad Request`: Error generating 2FA code.
 
----
-
-## Verify Two Factor Authentication (2FA)
-- **Endpoint**: `POST /api/users/verifyTwoFactorAuth`
-- **Description**: Verifies the user's 2FA token and enables 2FA on their account.
+## POST /verifyTwoFactorAuth
+- **Description**: Verify the 2FA token.
 - **Request Body**:
-    ```json
-    {
-      "token": "string"
-    }
-    ```
-- **Response**:
-    - **200 OK**:
-    ```json
-    {
-      "message": "Two factor authentication enabled successfully"
-    }
-    ```
-    - **400 Bad Request**:
-    ```json
-    {
-      "error": "Error message"
-    }
-    ```
+  - `token`: 2FA token
+- **Response**: 
+  - `200 OK`: 2FA verified successfully.
+  - `400 Bad Request`: Invalid token.
+
+## GET /disableTwoFactorAuth
+- **Description**: Disable two-factor authentication for the user.
+- **Response**: 
+  - `200 OK`: 2FA disabled successfully.
+  - `400 Bad Request`: Error disabling 2FA.
