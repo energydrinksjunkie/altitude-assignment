@@ -4,6 +4,8 @@ const User = require('../models/userModel');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 const upload = require('../middleware/uploadMiddleware');
 const passport = require('passport');
 const { auth, authAdmin } = require('../middleware/authMiddleware');
@@ -32,7 +34,7 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, token } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
             throw new Error('User not found');
@@ -47,8 +49,23 @@ router.post('/login', async (req, res) => {
         if (user.isBlocked) {
             throw new Error('User is deleted');
         }
-        const token = jwt.sign( { id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token: token });
+        if(user.twoFactorAuthEnabled) {
+            if (!token) {
+                return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true });
+            }
+            const isVerified = speakeasy.totp.verify({
+                secret: user.twoFactorAuthSecret,
+                encoding: 'base32',
+                token: token
+            });
+
+            if (!isVerified) {
+                throw new Error('Invalid token');
+            }
+        }
+
+        const jwtToken = jwt.sign( { id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).json({ token: jwtToken });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -57,6 +74,9 @@ router.post('/login', async (req, res) => {
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), (req, res) => {
+    if(req.user.twoFactorEnabled) {
+        return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true });
+    }
     const token = jwt.sign( { id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ token: token });
 });
@@ -221,6 +241,41 @@ router.post('/forgotPassword', auth, async (req, res) => {
         req.user.password = await bycrypt.hash(password, 10);
         await req.user.save();
         res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.get('/generateTwoFactorAuth', auth, async (req, res) => {
+    try {
+        const secret = speakeasy.generateSecret({ length: 20 });
+
+        req.user.twoFactorSecret = secret.base32;
+        await req.user.save();
+
+        QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
+            if (err) return res.status(400).json({ error: err.message });
+            res.status(200).json({ qrCode: data_url });
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.post('/verifyTwoFactorAuth', auth, async (req, res) => {
+    try {
+        const { token } = req.body;
+        const isVerified = speakeasy.totp.verify({
+            secret: req.user.twoFactorSecret,
+            encoding: 'base32',
+            token: token
+        });
+        if (!isVerified) {
+            throw new Error('Invalid token');
+        }
+        req.user.twoFactorEnabled = true;
+        await req.user.save();
+        res.status(200).json({ message: 'Two factor authentication enabled successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
