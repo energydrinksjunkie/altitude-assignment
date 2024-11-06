@@ -68,4 +68,27 @@ async function sendPasswordResetEmail(user) {
     }
 }
 
-module.exports = { sendVerificationEmail };
+async function sendTwoFactorCodeEmail(user,code) {
+    try {
+        const passwordResetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '5m' });
+
+        const emailTemplate = await ejs.renderFile(
+        path.join(__dirname, '../templates/twoFactorEmail.ejs'), 
+        { firstName: user.firstName, code: code });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: 'Your 2FA Code',
+            html: emailTemplate,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('2FA code email sent to:' + user.email);
+    }
+    catch (error) {
+        console.error(error);
+    }
+}
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendTwoFactorCodeEmail };

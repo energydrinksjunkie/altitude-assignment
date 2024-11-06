@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     isVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
+    twoFactorMethod: { type: String, enum: ['app', 'email', 'none'], default: 'none' },
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: { type: String },
 });

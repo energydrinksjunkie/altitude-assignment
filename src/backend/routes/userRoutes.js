@@ -9,7 +9,7 @@ const QRCode = require('qrcode');
 const upload = require('../middleware/uploadMiddleware');
 const passport = require('passport');
 const { auth, authAdmin } = require('../middleware/authMiddleware');
-const {sendVerificationEmail, sendPasswordResetEmail} = require('../services/emailService');
+const {sendVerificationEmail, sendPasswordResetEmail, sendTwoFactorCodeEmail} = require('../services/emailService');
 
 router.post('/register', async (req, res) => {
     try {
@@ -246,11 +246,12 @@ router.post('/forgotPassword', auth, async (req, res) => {
     }
 });
 
-router.get('/generateTwoFactorAuth', auth, async (req, res) => {
+router.get('/generateTwoFactorAuthApp', auth, async (req, res) => {
     try {
         const secret = speakeasy.generateSecret({ length: 20 });
 
         req.user.twoFactorSecret = secret.base32;
+        req.user.twoFactorMethod = 'app';
         await req.user.save();
 
         QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
@@ -262,20 +263,56 @@ router.get('/generateTwoFactorAuth', auth, async (req, res) => {
     }
 });
 
+router.get('/generateTwoFactorAuthEmail', auth, async (req, res) => {
+    try {
+        const code = Math.floor(100000 + Math.random() * 900000);
+        req.user.twoFactorSecret = code.toString();
+        req.user.twoFactorMethod = 'email';
+
+        sendTwoFactorCodeEmail(req.user, code);
+
+        await req.user.save();
+        res.status(200).json({ message: '2FA code sent successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 router.post('/verifyTwoFactorAuth', auth, async (req, res) => {
     try {
         const { token } = req.body;
-        const isVerified = speakeasy.totp.verify({
-            secret: req.user.twoFactorSecret,
-            encoding: 'base32',
-            token: token
-        });
-        if (!isVerified) {
-            throw new Error('Invalid token');
+
+        if(req.user.twoFactorMethod === 'app') {
+            const isVerified = speakeasy.totp.verify({
+                secret: req.user.twoFactorSecret,
+                encoding: 'base32',
+                token: token
+            });
+            if (!isVerified) {
+                throw new Error('Invalid token');
+            }
+        } else if (req.user.twoFactorMethod === 'email') {
+            if (token !== req.user.twoFactorSecret) {
+                throw new Error('Invalid token');
+            }
         }
-        req.user.twoFactorEnabled = true;
+        if(!req.user.twoFactorEnabled) {
+            req.user.twoFactorEnabled = true;
+            await req.user.save();
+            res.status(200).json({ message: 'Two factor authentication enabled successfully' });
+        }
+        res.status(200).json({ message: 'Two factor authentication verified successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.get('/disableTwoFactorAuth', auth, async (req, res) => {
+    try {
+        req.user.twoFactorEnabled = false;
+        req.user.twoFactorMethod = 'none';
         await req.user.save();
-        res.status(200).json({ message: 'Two factor authentication enabled successfully' });
+        res.status(200).json({ message: 'Two factor authentication disabled successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
