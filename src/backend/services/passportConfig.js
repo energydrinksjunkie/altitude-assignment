@@ -17,7 +17,7 @@ passport.use(new GoogleStrategy({
           firstName: profile.name.givenName,
           lastName: profile.name.familyName,
           email: profile.emails[0].value,
-          dateOfBirth: new Date(year, month, day),
+          dateOfBirth: new Date(),
           profilePicture: profile.photos[0].value,
           isVerified: true,
           password: null,
