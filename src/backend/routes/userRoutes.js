@@ -5,6 +5,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const upload = require('../middleware/uploadMiddleware');
+const passport = require('passport');
 const { auth, authAdmin } = require('../middleware/authMiddleware');
 const {sendVerificationEmail, sendPasswordResetEmail} = require('../services/emailService');
 
@@ -51,6 +52,13 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
+});
+
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), (req, res) => {
+    const token = jwt.sign( { id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ token: token });
 });
 
 router.post('/uploadProfilePicture', auth, upload, async (req, res) => {
