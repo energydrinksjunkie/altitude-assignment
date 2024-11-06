@@ -4,11 +4,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoutes');
 const passport = require('passport');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(passport.initialize());
+app.use(cors());
 
 mongoose.connect(process.env.MONGO_URI);
 
