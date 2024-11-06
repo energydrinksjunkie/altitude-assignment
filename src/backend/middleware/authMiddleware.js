@@ -23,4 +23,16 @@ const auth = async (req, res, next) => {
     }
 };
 
-module.exports = auth;
+const authAdmin = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'admin') {
+            throw new Error('Authentication failed');
+        }
+        next();
+    }
+    catch (error) {
+        res.status(401).json({ error: error.message });
+    }
+};
+
+module.exports = { auth, authAdmin };

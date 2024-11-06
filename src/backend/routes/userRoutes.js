@@ -3,8 +3,9 @@ const bycrypt = require('bcrypt');
 const User = require('../models/userModel');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const path = require('path');
 const upload = require('../middleware/uploadMiddleware');
-const auth = require('../middleware/authMiddleware');
+const { auth, authAdmin } = require('../middleware/authMiddleware');
 const {sendVerificationEmail, sendPasswordResetEmail} = require('../services/emailService');
 
 router.post('/register', async (req, res) => {
@@ -16,6 +17,7 @@ router.post('/register', async (req, res) => {
             email,
             password: await bycrypt.hash(password, 10),
             dateOfBirth,
+            profilePicture: path.join(__dirname, '../../public/uploads/default.png')
         });
         await user.save();
         
@@ -40,6 +42,9 @@ router.post('/login', async (req, res) => {
         }
         if (!user.isVerified) {
             throw new Error('User is not verified');
+        }
+        if (user.isBlocked) {
+            throw new Error('User is deleted');
         }
         const token = jwt.sign( { id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ token: token });
@@ -85,6 +90,50 @@ router.put('/updateProfile', auth, async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
+router.get('/getProfile', auth, async (req, res) => {
+    try {
+        res.status(200).json({ firstName: req.user.firstName, lastName: req.user.lastName, email: req.user.email, dateOfBirth: req.user.dateOfBirth, profilePicture: req.user.profilePicture });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.get('/users', auth, authAdmin, async (req, res) => {
+    const { isVerified } = req.query;
+    
+    try {
+        let users;
+
+        if (isVerified === 'true') {
+            users = await User.find({ isVerified: true });
+        } else if (isVerified === 'false') {
+            users = await User.find({ isVerified: false });
+        } else {
+            users = await User.find();
+        }
+
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.delete('/deleteUser/:id', auth, authAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        user.isBlocked = true;
+        await user.save();
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 
 router.get('/verify/:token', async (req, res) => {
     try {
