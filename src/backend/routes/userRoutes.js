@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     try {
-        const { email, password, token } = req.body;
+        const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
             throw new Error('User not found');
@@ -50,18 +50,7 @@ router.post('/login', async (req, res) => {
             throw new Error('User is deleted');
         }
         if(user.twoFactorAuthEnabled) {
-            if (!token) {
-                return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true });
-            }
-            const isVerified = speakeasy.totp.verify({
-                secret: user.twoFactorAuthSecret,
-                encoding: 'base32',
-                token: token
-            });
-
-            if (!isVerified) {
-                throw new Error('Invalid token');
-            }
+            return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true });
         }
 
         const jwtToken = jwt.sign( { id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -180,9 +169,9 @@ router.delete('/deleteUser/:id', auth, authAdmin, async (req, res) => {
 });
 
 
-router.get('/verify/:token', async (req, res) => {
+router.post('/verify/', async (req, res) => {
     try {
-        const { token } = req.params;
+        const { token } = req.body;
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
 
@@ -203,7 +192,7 @@ router.get('/verify/:token', async (req, res) => {
     }
 });
 
-router.get('/resendVerificationEmail/:email', auth, async (req, res) => {
+router.get('/resendVerificationEmail/:email', async (req, res) => {
     try {
         const { email } = req.params;
         const user = await User.findOne({ email });
@@ -216,7 +205,7 @@ router.get('/resendVerificationEmail/:email', auth, async (req, res) => {
             throw new Error('User is already verified');
         }
 
-        await sendPasswordResetEmail(user);
+        await sendVerificationEmail(user);
 
         res.status(200).json({ message: 'Verification email sent successfully' });
     } catch (error) {
@@ -318,7 +307,8 @@ router.post('/verifyTwoFactorAuth', auth, async (req, res) => {
             await req.user.save();
             res.status(200).json({ message: 'Two factor authentication enabled successfully' });
         }
-        res.status(200).json({ message: 'Two factor authentication verified successfully' });
+        const tokenJwt = jwt.sign( { id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).json({ message: 'Two factor authentication verified successfully', token: tokenJwt });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

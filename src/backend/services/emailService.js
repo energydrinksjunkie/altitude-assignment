@@ -18,8 +18,8 @@ async function sendVerificationEmail(user) {
     try {
         const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '5m' });
     
-        // const verificationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
-        const verificationLink = `${process.env.BASE_URL}/api/users/verify/${verificationToken}`;
+        const verificationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
+        // const verificationLink = `${process.env.BASE_URL}/api/users/verify/${verificationToken}`;
         const resend = `${process.env.BASE_URL}/api/users/resendVerificationEmail/${user.email}`;
 
         const emailTemplate = await ejs.renderFile(

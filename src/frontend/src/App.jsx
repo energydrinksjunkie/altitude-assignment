@@ -1,17 +1,17 @@
-import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } from 'react-router-dom'
+import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider, BrowserRouter, Routes } from 'react-router-dom'
 import Login from './components/Login'
-
-const router = createBrowserRouter (
-  createRoutesFromElements(
-    <Route path="login" element={<Login />} />
-  )
-)
+import Verify from './components/Verify'
 
 function App() {
 
   return (
     <>
-     <RouterProvider router={router} />
+     <BrowserRouter>
+     <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/verify/:token" element={<Verify />} />
+     </Routes>
+     </BrowserRouter>
     </>
   )
 }
