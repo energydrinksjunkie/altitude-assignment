@@ -128,18 +128,35 @@ router.get('/getProfile', auth, async (req, res) => {
 });
 
 router.get('/users', auth, authAdmin, async (req, res) => {
-    const { isVerified } = req.query;
+    const { isVerified, name, fromDate, toDate } = req.query;
     
     try {
-        let users;
+        let query = {};
 
         if (isVerified === 'true') {
-            users = await User.find({ isVerified: true });
+            query.isVerified = isVerified;
         } else if (isVerified === 'false') {
-            users = await User.find({ isVerified: false });
-        } else {
-            users = await User.find();
+            query.isVerified = false;
         }
+
+        if (name) {
+            query.$or = [
+                { firstName: { $regex: name, $options: 'i' } },
+                { lastName: { $regex: name, $options: 'i' } }
+            ];
+        }
+
+        if (fromDate || toDate) {
+            query.dateOfBirth = {};
+            if (fromDate) {
+                query.dateOfBirth.$gte = new Date(fromDate);
+            }
+            if (toDate) {
+                query.dateOfBirth.$lte = new Date(toDate);
+            }
+        }
+
+        const users = await User.find(query).select('-password -twoFactorSecret');
 
         res.status(200).json(users);
     } catch (error) {

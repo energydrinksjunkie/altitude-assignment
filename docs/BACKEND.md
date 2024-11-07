@@ -64,15 +64,18 @@
   - `200 OK`: Profile details.
   - `400 Bad Request`: Error retrieving profile.
 
-## GET /users
-- **Description**: Get a list of users with optional filters.
-- **Query Params**: 
-  - `isVerified`: Optional filter (`true` or `false`)
-- **Response**: 
-  - `200 OK`: List of users.
+## GET /users (ADMIN)
+- **Description**: Get a list of users with optional filters for verification status, name, and date of birth range.
+- **Query Params**:
+  - `isVerified`: Optional filter (`true` or `false`) to filter users by verification status.
+  - `name`: Optional filter. Can search for users by matching `firstName` or `lastName` (case-insensitive).
+  - `fromDate`: Optional filter. The starting date for the `dateOfBirth` range (format: `YYYY-MM-DD`).
+  - `toDate`: Optional filter. The ending date for the `dateOfBirth` range (format: `YYYY-MM-DD`).
+- **Response**:
+  - `200 OK`: A list of users matching the specified filters, excluding `password` and `twoFactorSecret`.
 
-## DELETE /deleteUser/:id
-- **Description**: Delete a user by ID (admin only).
+## DELETE /deleteUser/:id (ADMIN)
+- **Description**: Delete a user by ID.
 - **Response**: 
   - `200 OK`: User deleted successfully.
   - `400 Bad Request`: User not found or unauthorized action.
