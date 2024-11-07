@@ -82,8 +82,8 @@ router.post('/uploadProfilePicture', auth, upload, async (req, res) => {
 
 router.post('/changePassword', auth, async (req, res) => {
     try {
-        const { oldPassword, newPassword } = req.body;
-        const isMatch = await bycrypt.compare(oldPassword, req.user.password);
+        const { currentPassword, newPassword } = req.body;
+        const isMatch = await bycrypt.compare(currentPassword, req.user.password);
         if (!isMatch) {
             throw new Error('Current password is incorrect');
         }
@@ -110,7 +110,7 @@ router.put('/updateProfile', auth, async (req, res) => {
 
 router.get('/getProfile', auth, async (req, res) => {
     try {
-        res.status(200).json({ firstName: req.user.firstName, lastName: req.user.lastName, email: req.user.email, dateOfBirth: req.user.dateOfBirth, profilePicture: req.user.profilePicture });
+        res.status(200).json({ firstName: req.user.firstName, lastName: req.user.lastName, email: req.user.email, dateOfBirth: req.user.dateOfBirth, profilePicture: req.user.profilePicture, twoFactorEnabled: req.user.twoFactorEnabled });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -169,7 +169,7 @@ router.delete('/deleteUser/:id', auth, authAdmin, async (req, res) => {
 });
 
 
-router.post('/verify/', async (req, res) => {
+router.post('/verify', async (req, res) => {
     try {
         const { token } = req.body;
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -213,9 +213,9 @@ router.get('/resendVerificationEmail/:email', async (req, res) => {
     }
 });
 
-router.get('/forgotPasswordVerify/:token', async (req, res) => {
+router.post('/forgotPasswordVerify', async (req, res) => {
     try {
-        const { token } = req.params;
+        const { token } = req.body;
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
         if (!user) {

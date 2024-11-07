@@ -74,7 +74,7 @@ function Profile() {
           }}
         >
           <Avatar
-            alt="Profile Picture"
+            
             src={profile.profilePicture || "../assets/default.png"}
             sx={{ width: 100, height: 100, mb: 2 }}
           />
