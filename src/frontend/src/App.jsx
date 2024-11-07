@@ -2,6 +2,7 @@ import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider, B
 import Login from './components/Login'
 import Verify from './components/Verify'
 import Register from './components/Register'
+import Profile from './components/Profile'
 
 function App() {
 
@@ -12,6 +13,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify/:token" element={<Verify />} />
+      <Route path="/profile" element={<Profile />} />
      </Routes>
      </BrowserRouter>
     </>
