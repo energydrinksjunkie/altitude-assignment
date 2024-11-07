@@ -17,21 +17,25 @@ function Login() {
                 email, 
                 password
             });
-
-            if (response.data.token) {
+    
+            if (response.data.twoFactorAuthRequired) {
+                localStorage.setItem('tempToken', response.data.token);
+                navigate('/verify2fa');
+            } else if (response.data.token) {
                 localStorage.setItem('token', response.data.token);
                 navigate('/');
             } else {
                 setError('Invalid credentials');
             }
-            } catch (err) {
-                if (err.response && err.response.data && err.response.data.error) {
-                  setError(err.response.data.error);
-                } else {
-                  setError('An unexpected error occurred. Please try again.');
-                }
-              }
+        } catch (err) {
+            if (err.response && err.response.data && err.response.data.error) {
+                setError(err.response.data.error);
+            } else {
+                setError('An unexpected error occurred. Please try again.');
+            }
+        }
     };
+    
 
     return (
         <Box

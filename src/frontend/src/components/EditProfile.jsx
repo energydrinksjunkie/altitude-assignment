@@ -18,7 +18,7 @@ function EditProfile() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Get token from localStorage
+    const token = localStorage.getItem('token');
     if (token) {
       fetchProfile(token);
     } else {
@@ -36,13 +36,13 @@ function EditProfile() {
       });
       // Convert the dateOfBirth to a format that input[type="date"] expects: YYYY-MM-DD
       const formattedDateOfBirth = response.data.dateOfBirth
-        ? new Date(response.data.dateOfBirth).toISOString().split('T')[0] // Extract only the date part
+        ? new Date(response.data.dateOfBirth).toISOString().split('T')[0]
         : '';
       setProfile({
         ...response.data,
-        dateOfBirth: formattedDateOfBirth, // Set formatted dateOfBirth
+        dateOfBirth: formattedDateOfBirth,
       });
-      setTwoFactorEnabled(response.data.twoFactorEnabled); // Set initial 2FA state
+      setTwoFactorEnabled(response.data.twoFactorEnabled);
     } catch (err) {
       setError('Error fetching profile');
     } finally {
@@ -52,7 +52,7 @@ function EditProfile() {
 
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
-    setFile(selectedFile); // Set the selected file
+    setFile(selectedFile);
 
     if (selectedFile) {
       await handleProfilePictureUpload(selectedFile);
@@ -73,7 +73,7 @@ function EditProfile() {
       });
 
       setSuccess('Profile picture updated successfully!');
-      fetchProfile(token); // Re-fetch profile to show updated picture
+      fetchProfile(token);
     } catch (err) {
       setError('Error uploading profile picture');
     }
@@ -120,15 +120,21 @@ function EditProfile() {
 
   const toggleTwoFactor = async () => {
     const token = localStorage.getItem('token');
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/toggleTwoFactor`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setTwoFactorEnabled(response.data.twoFactorEnabled); // Update 2FA status
-    } catch (err) {
-      setError('Error updating 2FA status');
+    
+    if (!twoFactorEnabled) {
+      navigate('/generate2fa');
+    } else {
+      try {
+        await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/users/disableTwoFactorAuth`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setTwoFactorEnabled(false);
+        setSuccess('Two-Factor Authentication has been disabled.');
+      } catch (err) {
+        setError('Error disabling Two-Factor Authentication');
+      }
     }
   };
 
@@ -176,7 +182,7 @@ function EditProfile() {
             <input
               type="file"
               hidden
-              onChange={handleFileChange} // Automatically uploads when file is selected
+              onChange={handleFileChange}
             />
           </Button>
 

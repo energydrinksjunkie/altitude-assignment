@@ -4,6 +4,8 @@ import Verify from './components/Verify'
 import Register from './components/Register'
 import Profile from './components/Profile'
 import EditProfile from './components/EditProfile'
+import Verify2FALogin from './components/Verify2FALogin'
+import Generate2FA from './components/Generate2FA'
 
 function App() {
 
@@ -16,6 +18,8 @@ function App() {
       <Route path="/verify/:token" element={<Verify />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/editProfile" element={<EditProfile />} />
+      <Route path="/verify2fa" element={<Verify2FALogin />} />
+      <Route path="/generate2fa" element={<Generate2FA />} />
      </Routes>
      </BrowserRouter>
     </>

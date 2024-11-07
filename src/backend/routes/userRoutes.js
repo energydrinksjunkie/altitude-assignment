@@ -49,16 +49,28 @@ router.post('/login', async (req, res) => {
         if (user.isBlocked) {
             throw new Error('User is deleted');
         }
-        if(user.twoFactorAuthEnabled) {
-            return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true });
+
+
+        if (user.twoFactorEnabled) {
+            const tempJwtToken = jwt.sign({ id: user._id, twoFactorAuthRequired: true }, process.env.JWT_SECRET, { expiresIn: '10m' });
+
+            if (user.twoFactorMethod === 'email') {
+                const code = Math.floor(100000 + Math.random() * 900000); // Generating 6-digit code
+                user.twoFactorSecret = code.toString();
+                await sendTwoFactorCodeEmail(user, code);
+                await user.save();
+            }
+
+            return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true, token: tempJwtToken });
         }
 
-        const jwtToken = jwt.sign( { id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ token: jwtToken });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -259,10 +271,11 @@ router.get('/generateTwoFactorAuthApp', auth, async (req, res) => {
         req.user.twoFactorSecret = secret.base32;
         req.user.twoFactorMethod = 'app';
         await req.user.save();
+        const tempJwtToken = jwt.sign({ id: req.user._id, twoFactorAuthRequired: true }, process.env.JWT_SECRET, { expiresIn: '10m' });
 
         QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
             if (err) return res.status(400).json({ error: err.message });
-            res.status(200).json({ qrCode: data_url });
+            res.status(200).json({ qrCode: data_url, token: tempJwtToken });
         });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -275,10 +288,12 @@ router.get('/generateTwoFactorAuthEmail', auth, async (req, res) => {
         req.user.twoFactorSecret = code.toString();
         req.user.twoFactorMethod = 'email';
 
-        sendTwoFactorCodeEmail(req.user, code);
+        await sendTwoFactorCodeEmail(req.user, code);
 
         await req.user.save();
-        res.status(200).json({ message: '2FA code sent successfully' });
+
+        const tempJwtToken = jwt.sign({ id: req.user._id, twoFactorAuthRequired: true }, process.env.JWT_SECRET, { expiresIn: '10m' });
+        res.status(200).json({ message: '2FA code sent successfully', token: tempJwtToken });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -302,17 +317,21 @@ router.post('/verifyTwoFactorAuth', auth, async (req, res) => {
                 throw new Error('Invalid token');
             }
         }
-        if(!req.user.twoFactorEnabled) {
+
+        if (!req.user.twoFactorEnabled) {
             req.user.twoFactorEnabled = true;
             await req.user.save();
-            res.status(200).json({ message: 'Two factor authentication enabled successfully' });
+            return res.status(200).json({ message: 'Two factor authentication enabled successfully' });
         }
-        const tokenJwt = jwt.sign( { id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ message: 'Two factor authentication verified successfully', token: tokenJwt });
+
+        const tokenJwt = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        return res.status(200).json({ message: 'Two factor authentication verified successfully', token: tokenJwt });
+
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 });
+
 
 router.get('/disableTwoFactorAuth', auth, async (req, res) => {
     try {
