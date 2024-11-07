@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
         
         await sendVerificationEmail(user);
 
-        res.status(201).json({ message: 'User created successfully' });
+        res.status(201).json({ message: 'User created successfully. Check your email.' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
