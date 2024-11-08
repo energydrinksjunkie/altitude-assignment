@@ -7,7 +7,7 @@ const Home = () => {
     const token = localStorage.getItem('token');
     
     if (!token) {
-        return <p>Ulogujte se da biste nastavili.</p>;
+        return <p>Hey, make an account to continue!</p>;
     }
 
     try {

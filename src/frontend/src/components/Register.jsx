@@ -72,7 +72,6 @@ function Login() {
 
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box
             component="form"
             onSubmit={handleSubmit}
@@ -154,7 +153,6 @@ function Login() {
                 </Button>
             <Link href="/login">Already have an account?</Link>
         </Box>
-        </LocalizationProvider>
     )
 }
 export default Login

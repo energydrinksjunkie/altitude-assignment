@@ -5,6 +5,7 @@ import Register from './components/Register'
 import Profile from './components/Profile'
 import EditProfile from './components/EditProfile'
 import Home from './components/Home'
+import Navbar from './components/Navbar'
 import Verify2FALogin from './components/Verify2FALogin'
 import Generate2FA from './components/Generate2FA'
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -19,6 +20,7 @@ function App() {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
      <BrowserRouter>
+      <Navbar />
      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
