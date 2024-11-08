@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { Button } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function GoogleLoginComponent() {
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLoginSuccess = async (response) => {
@@ -13,6 +14,11 @@ function GoogleLoginComponent() {
       const responseData = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/google`, {
         token: credential,
       });
+
+      if (responseData.data.error) {
+        setError(responseData.data.error);
+        return;
+      }
 
       if (responseData.data.twoFactorAuthRequired) {
         localStorage.setItem('tempToken', responseData.data.token);
@@ -29,10 +35,12 @@ function GoogleLoginComponent() {
 
   const handleLoginFailure = (error) => {
     console.error('Google login error', error);
+    setError('Google login failed. Please try again.');
   };
 
   return (
     <div>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       <GoogleLogin
         onSuccess={handleLoginSuccess}
         onError={handleLoginFailure}

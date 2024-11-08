@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
         if (!user) {
             throw new Error('User not found');
         }
-        if (user.registerSource === 'google') {
+        if (user.registerSource === 'google' && !user.password) {
             throw new Error('Please login with Google');
         }
         const isMatch = await bycrypt.compare(password, user.password);
@@ -106,6 +106,10 @@ router.post('/google', async (req, res) => {
 
             const jwtToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
             return res.status(200).json({ token: jwtToken });
+        }
+
+        if (user.isBlocked) {
+            return res.status(200).json({ error: 'User is blocked' });
         }
 
         if (user.twoFactorEnabled) {

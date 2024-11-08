@@ -6,6 +6,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import GoogleLoginComponent from './GoogleLogin';
 
 function Login() {
 
@@ -152,6 +153,7 @@ function Login() {
                 Register
                 </Button>
             <Link href="/login">Already have an account?</Link>
+            <GoogleLoginComponent />
         </Box>
     )
 }
