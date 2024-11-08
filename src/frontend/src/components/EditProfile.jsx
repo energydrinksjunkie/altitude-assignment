@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Avatar, TextField, Button, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Avatar, TextField, Button, CircularProgress, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 function EditProfile() {
   const [profile, setProfile] = useState(null);
@@ -15,6 +12,9 @@ function EditProfile() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [file, setFile] = useState(null);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +34,6 @@ function EditProfile() {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Convert the dateOfBirth to a format that input[type="date"] expects: YYYY-MM-DD
       const formattedDateOfBirth = response.data.dateOfBirth
         ? new Date(response.data.dateOfBirth).toISOString().split('T')[0]
         : '';
@@ -72,10 +71,10 @@ function EditProfile() {
         },
       });
 
-      setSuccess('Profile picture updated successfully!');
+      showSnackbar('Profile picture updated successfully!', 'success');
       fetchProfile(token);
     } catch (err) {
-      setError('Error uploading profile picture');
+      showSnackbar('Error uploading profile picture', 'error');
     }
   };
 
@@ -94,9 +93,9 @@ function EditProfile() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setSuccess('Profile updated successfully!');
+      showSnackbar('Profile updated successfully!', 'success');
     } catch (err) {
-      setError('Error updating profile');
+      showSnackbar('Error updating profile', 'error');
     }
   };
 
@@ -112,9 +111,9 @@ function EditProfile() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setSuccess('Password updated successfully!');
+      showSnackbar('Password updated successfully!', 'success');
     } catch (err) {
-      setError('Error changing password');
+      showSnackbar('Error changing password', 'error');
     }
   };
 
@@ -131,11 +130,21 @@ function EditProfile() {
           },
         });
         setTwoFactorEnabled(false);
-        setSuccess('Two-Factor Authentication has been disabled.');
+        showSnackbar('Two-Factor Authentication has been disabled.', 'success');
       } catch (err) {
-        setError('Error disabling Two-Factor Authentication');
+        showSnackbar('Error disabling Two-Factor Authentication', 'error');
       }
     }
+  };
+
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   if (loading) {
@@ -153,9 +162,6 @@ function EditProfile() {
         p: 3,
       }}
     >
-      {error && <Alert severity="error">{error}</Alert>}
-      {success && <Alert severity="success">{success}</Alert>}
-
       {profile && (
         <Box
           sx={{
@@ -167,6 +173,7 @@ function EditProfile() {
             boxShadow: 3,
             width: '300px',
             textAlign: 'center',
+            bgcolor: 'background.paper',
           }}
         >
           <Avatar
@@ -248,7 +255,13 @@ function EditProfile() {
             Change Password
           </Button>
 
-          <Typography variant="body2">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.primary',
+              fontWeight: 'bold',
+            }}
+          >
             Two-Factor Authentication is {twoFactorEnabled ? 'Enabled' : 'Disabled'}
           </Typography>
           <Button
@@ -260,8 +273,18 @@ function EditProfile() {
           </Button>
         </Box>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
-export default EditProfile;
+export default EditProfile

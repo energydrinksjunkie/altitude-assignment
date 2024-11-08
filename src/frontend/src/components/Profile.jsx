@@ -27,7 +27,6 @@ function Profile() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('Profile response:', response);
       setProfile(response.data);
     } catch (err) {
       if (err.response && err.response.data && err.response.data.error) {
@@ -45,7 +44,9 @@ function Profile() {
   };
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <CircularProgress />
+    );
   }
 
   return (
@@ -54,41 +55,49 @@ function Profile() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
+        maxWidth: 400,
+        mx: 'auto',
+        mt: 4,
         p: 3,
+        borderRadius: 2,
+        boxShadow: 3,
+        bgcolor: 'background.paper',
       }}
     >
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
+      
       {profile && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            p: 3,
-            borderRadius: 2,
-            boxShadow: 3,
-            width: '300px',
-            textAlign: 'center',
-          }}
-        >
+        <>
           <Avatar
-            
             src={profile.profilePicture || "../assets/default.png"}
-            sx={{ width: 100, height: 100, mb: 2 }}
+            sx={{ width: 100, height: 100, mb: 2, border: '2px solid', borderColor: 'primary.main' }}
           />
-          <Typography variant="h6">{profile.firstName} {profile.lastName}</Typography>
-          <Typography variant="body2" color="text.secondary"> {dayjs(profile.dateOfBirth).format('YYYY-MM-DD')}</Typography>
-          <Typography variant="body2" color="text.secondary">{profile.email}</Typography>
+          <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+            {profile.firstName} {profile.lastName}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {dayjs(profile.dateOfBirth).format('YYYY-MM-DD')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {profile.email}
+          </Typography>
           <Button
             variant="outlined"
-            sx={{ mt: 2 }}
+            sx={{
+              mt: 2,
+              width: '100%',
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                borderColor: 'primary.light',
+                backgroundColor: 'primary.dark',
+              },
+            }}
             onClick={handleEditProfile}
           >
             Edit Profile
           </Button>
-        </Box>
+        </>
       )}
     </Box>
   );

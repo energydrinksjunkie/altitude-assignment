@@ -14,15 +14,19 @@ import ForgotPassword from './components/ForgotPassword'
 import ResendForgotPassword from './components/ResendForgotPassword'
 import ResendVerificationEmail from './components/ResendVerificationEmail'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import dayjs from 'dayjs';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 function App() {
 
   return (
     <>
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <ThemeProvider theme={darkTheme}>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
      <BrowserRouter>
       <Navbar />
@@ -43,7 +47,7 @@ function App() {
      </Routes>
      </BrowserRouter>
      </GoogleOAuthProvider>
-     </LocalizationProvider>
+     </ThemeProvider>
     </>
   )
 }

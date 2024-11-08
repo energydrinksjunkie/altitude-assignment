@@ -75,7 +75,6 @@ const UsersList = () => {
                 }
             });
 
-            
             fetchUsers();
             handleCloseDialog();
         } catch (error) {
@@ -92,12 +91,13 @@ const UsersList = () => {
     };
 
     return (
-        <Box>
+        <Box sx={{ color: '#fff', backgroundColor: '#121212', p: 3, borderRadius: 2, 
+            mx: 'auto', mt: 1
+        }}>
             <Typography variant="h4" gutterBottom>
                 Users List
             </Typography>
 
-            {/* Filters Section */}
             <Box display="flex" gap={2} mb={2}>
                 <TextField
                     label="Search by name"
@@ -106,6 +106,15 @@ const UsersList = () => {
                     value={filters.name}
                     onChange={handleFilterChange}
                     fullWidth
+                    InputProps={{ style: { color: '#fff' } }}
+                    sx={{
+                        '.MuiOutlinedInput-root': {
+                            '& fieldset': { borderColor: '#424242' },
+                            '&:hover fieldset': { borderColor: '#616161' },
+                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
+                        },
+                        '& .MuiInputLabel-root': { color: '#90caf9' }
+                    }}
                 />
                 <TextField
                     label="From Date"
@@ -115,6 +124,15 @@ const UsersList = () => {
                     value={filters.fromDate}
                     onChange={handleFilterChange}
                     fullWidth
+                    InputProps={{ style: { color: '#fff' } }}
+                    sx={{
+                        '.MuiOutlinedInput-root': {
+                            '& fieldset': { borderColor: '#424242' },
+                            '&:hover fieldset': { borderColor: '#616161' },
+                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
+                        },
+                        '& .MuiInputLabel-root': { color: '#90caf9' }
+                    }}
                 />
                 <TextField
                     label="To Date"
@@ -124,6 +142,15 @@ const UsersList = () => {
                     value={filters.toDate}
                     onChange={handleFilterChange}
                     fullWidth
+                    InputProps={{ style: { color: '#fff' } }}
+                    sx={{
+                        '.MuiOutlinedInput-root': {
+                            '& fieldset': { borderColor: '#424242' },
+                            '&:hover fieldset': { borderColor: '#616161' },
+                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
+                        },
+                        '& .MuiInputLabel-root': { color: '#90caf9' }
+                    }}
                 />
                 <TextField
                     label="Verified"
@@ -136,6 +163,15 @@ const UsersList = () => {
                     SelectProps={{
                         native: true,
                     }}
+                    InputProps={{ style: { color: '#fff' } }}
+                    sx={{
+                        '.MuiOutlinedInput-root': {
+                            '& fieldset': { borderColor: '#424242' },
+                            '&:hover fieldset': { borderColor: '#616161' },
+                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
+                        },
+                        '& .MuiInputLabel-root': { color: '#90caf9' }
+                    }}
                 >
                     <option value="">All</option>
                     <option value="true">Verified</option>
@@ -143,7 +179,6 @@ const UsersList = () => {
                 </TextField>
             </Box>
 
-            {/* Users List */}
             <Box display="flex" flexDirection="column" gap={2}>
                 {filteredUsers.length === 0 ? (
                     <Typography>No users found.</Typography>
@@ -155,8 +190,7 @@ const UsersList = () => {
                             alignItems="center"
                             justifyContent="space-between"
                             padding={2}
-                            border={1}
-                            borderRadius="8px"
+                            sx={{ backgroundColor: '#424242', borderRadius: '8px' }}
                         >
                             <Box display="flex" alignItems="center" gap={2}>
                                 <Avatar src={user.profilePicture} alt={`${user.firstName} ${user.lastName}`} />
@@ -174,6 +208,11 @@ const UsersList = () => {
                                     variant="outlined"
                                     color="error"
                                     onClick={() => handleDeleteClick(user._id)}
+                                    sx={{
+                                        color: '#e57373',
+                                        borderColor: '#e57373',
+                                        '&:hover': { borderColor: '#f44336', backgroundColor: 'rgba(244,67,54,0.1)' }
+                                    }}
                                 >
                                     Delete
                                 </Button>
@@ -183,17 +222,16 @@ const UsersList = () => {
                 )}
             </Box>
 
-            {/* Delete confirmation dialog */}
             <Dialog open={openDeleteDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Delete User</DialogTitle>
                 <DialogContent>
                     <Typography>Are you sure you want to delete this user?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog} color="primary">
+                    <Button onClick={handleCloseDialog} sx={{ color: '#90caf9' }}>
                         Cancel
                     </Button>
-                    <Button onClick={handleDeleteUser} color="secondary">
+                    <Button onClick={handleDeleteUser} sx={{ color: '#e57373' }}>
                         Confirm
                     </Button>
                 </DialogActions>

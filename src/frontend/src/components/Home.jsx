@@ -7,7 +7,7 @@ const Home = () => {
     const token = localStorage.getItem('token');
     
     if (!token) {
-        return <p>Hey, make an account to continue!</p>;
+        return <p>Please create an account to continue!</p>;
     }
 
     try {
@@ -20,7 +20,8 @@ const Home = () => {
         }
     } catch (error) {
         console.error("Error decoding token:", error);
-        return <p>Greška sa autentikacijom. Molimo vas pokušajte ponovo.</p>;
+        localStorage.removeItem('token');
+        return <p>You have been logged out. Please log in again.</p>;
     }
 };
 

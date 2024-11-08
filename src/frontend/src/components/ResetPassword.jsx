@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Alert } from '@mui/material';
+import { Box, TextField, Button, Snackbar, Alert, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function ResetPassword() {
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('error');
 
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
@@ -15,14 +16,18 @@ function ResetPassword() {
     e.preventDefault();
 
     if (!passwordRegex.test(password)) {
-      setError('Password must be at least 8 characters long and include both letters and numbers.');
+      setAlertMessage('Password must be at least 8 characters long and include both letters and numbers.');
+      setAlertType('error');
+      setOpenSnackbar(true);
       return;
     }
 
     try {
       const tempToken = localStorage.getItem('tempToken');
       if (!tempToken) {
-        setError('No token found. Please restart the password reset process.');
+        setAlertMessage('No token found. Please restart the password reset process.');
+        setAlertType('error');
+        setOpenSnackbar(true);
         return;
       }
 
@@ -34,8 +39,9 @@ function ResetPassword() {
         }
       );
 
-      setSuccess('Password reset successful. Redirecting to login...');
-      setError('');
+      setAlertMessage('Password reset successful. Redirecting to login...');
+      setAlertType('success');
+      setOpenSnackbar(true);
       localStorage.removeItem('tempToken');
 
       setTimeout(() => {
@@ -43,11 +49,13 @@ function ResetPassword() {
       }, 2000);
     } catch (err) {
       if (err.response) {
-        setError(err.response.data.error || 'Failed to reset password.');
+        setAlertMessage(err.response.data.error || 'Failed to reset password.');
+        setAlertType('error');
       } else {
-        setError('Network error or no response from server');
+        setAlertMessage('Network error or no response from server');
+        setAlertType('error');
       }
-      setSuccess('');
+      setOpenSnackbar(true);
     }
   };
 
@@ -58,11 +66,20 @@ function ResetPassword() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
         p: 3,
+        maxWidth: 400,
+        mx: 'auto',
+        mt: 4,
+        bgcolor: 'background.paper',
+        borderRadius: 2,
+        boxShadow: 3,
       }}
     >
-      <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '400px' }}>
+      <Typography variant="h6" component="h2" gutterBottom sx={{ textAlign: 'center', color: 'text.primary' }}>
+        Reset Your Password
+      </Typography>
+
+      <form onSubmit={handleSubmit} style={{ width: '100%' }}>
         <TextField
           type="password"
           label="New Password"
@@ -71,17 +88,30 @@ function ResetPassword() {
           margin="normal"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          error={!!error && !passwordRegex.test(password)}
-          helperText={!passwordRegex.test(password) && "Password must be at least 8 characters with letters and numbers."}
+          error={!!password && !passwordRegex.test(password)}
+          helperText={!!password && !passwordRegex.test(password) && "Password must be at least 8 characters with letters and numbers."}
+          sx={{
+            backgroundColor: 'background.default',
+            borderRadius: 1,
+            mb: 2,
+          }}
         />
 
-        <Button type="submit" variant="contained" color="primary" fullWidth>
+        <Button type="submit" variant="contained" fullWidth sx={{ mb: 2 }}>
           Reset Password
         </Button>
-
-        {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
-        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
       </form>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setOpenSnackbar(false)} severity={alertType} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
