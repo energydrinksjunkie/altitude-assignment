@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, CircularProgress, Alert } from '@mui/material';
+import { Box, CircularProgress, Alert } from '@mui/material';
 import axios from 'axios';
 
-function Verify() {
+function VerifyForgotPassword() {
   const navigate = useNavigate();
   const { token } = useParams();
   const [message, setMessage] = useState('');
@@ -11,15 +11,22 @@ function Verify() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifyToken = async () => {
+    const verifyForgotPasswordToken = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/verify`, { token });
-        setMessage(response.data.message || 'Verification successful');
-        setError('');
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/forgotPasswordVerify`, { token });
         
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        const tempToken = response.data.token;
+        if (tempToken) {
+          localStorage.setItem('tempToken', tempToken);
+          setMessage('Verification successful. Redirecting to reset password...');
+          setError('');
+
+          setTimeout(() => {
+            navigate('/resetPassword');
+          }, 2000);
+        } else {
+          throw new Error('Verification failed, no token provided.');
+        }
       } catch (err) {
         if (err.response) {
           setError(err.response.data.error || 'Something went wrong');
@@ -33,7 +40,7 @@ function Verify() {
       }
     };
 
-    verifyToken();
+    verifyForgotPasswordToken();
   }, [token, navigate]);
 
   return (
@@ -59,4 +66,4 @@ function Verify() {
   );
 }
 
-export default Verify;
+export default VerifyForgotPassword;

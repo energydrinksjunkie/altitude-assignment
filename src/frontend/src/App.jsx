@@ -8,6 +8,11 @@ import Home from './components/Home'
 import Navbar from './components/Navbar'
 import Verify2FALogin from './components/Verify2FALogin'
 import Generate2FA from './components/Generate2FA'
+import VerifyForgotPassword from './components/VerifyForgotPassword'
+import ResetPassword from './components/ResetPassword'
+import ForgotPassword from './components/ForgotPassword'
+import ResendForgotPassword from './components/ResendForgotPassword'
+import ResendVerificationEmail from './components/ResendVerificationEmail'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -30,6 +35,11 @@ function App() {
       <Route path="/editProfile" element={<EditProfile />} />
       <Route path="/verify2fa" element={<Verify2FALogin />} />
       <Route path="/generate2fa" element={<Generate2FA />} />
+      <Route path="/forgotPasswordCheck/:token" element={<VerifyForgotPassword />} />
+      <Route path="/resetPassword" element={<ResetPassword />} />
+      <Route path="/forgotPassword" element={<ForgotPassword />} />
+      <Route path="/resendForgotPassword/:email" element={<ResendForgotPassword />} />
+      <Route path="/resendVerificationEmail/:email" element={<ResendVerificationEmail />} />
      </Routes>
      </BrowserRouter>
      </GoogleOAuthProvider>

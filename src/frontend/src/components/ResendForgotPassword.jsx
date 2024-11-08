@@ -1,40 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, CircularProgress, Alert } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Box, CircularProgress, Alert } from '@mui/material';
 import axios from 'axios';
 
-function Verify() {
-  const navigate = useNavigate();
-  const { token } = useParams();
+function ResendForgotPassword() {
+  const { email } = useParams();
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifyToken = async () => {
+    const resendForgotPasswordEmail = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/verify`, { token });
-        setMessage(response.data.message || 'Verification successful');
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/resendForgotPassword`, {
+          email,
+        });
+
+        setMessage(response.data.message || 'If this email is registered, a password reset link has been resent.');
         setError('');
-        
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
       } catch (err) {
         if (err.response) {
-          setError(err.response.data.error || 'Something went wrong');
-          setMessage('');
+          setError(err.response.data.error || 'Failed to resend reset email.');
         } else {
           setError('Network error or no response from server');
-          setMessage('');
         }
+        setMessage('');
       } finally {
         setLoading(false);
       }
     };
 
-    verifyToken();
-  }, [token, navigate]);
+    resendForgotPasswordEmail();
+  }, [email]);
 
   return (
     <Box
@@ -59,4 +56,4 @@ function Verify() {
   );
 }
 
-export default Verify;
+export default ResendForgotPassword;

@@ -285,9 +285,9 @@ router.post('/verify', async (req, res) => {
     }
 });
 
-router.get('/resendVerificationEmail/:email', async (req, res) => {
+router.post('/resendVerificationEmail/', async (req, res) => {
     try {
-        const { email } = req.params;
+        const { email } = req.body;
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -314,15 +314,16 @@ router.post('/forgotPasswordVerify', async (req, res) => {
         if (!user) {
             throw new Error('User not found');
         }
-        res.status(200).json({ message: 'User verified successfully' });
+        const tempToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '5m' });
+        res.status(200).json({ message: 'User verified successfully', token: tempToken });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
 
-router.get('/resendForgotPassword/:email', async (req, res) => {
+router.post('/resendForgotPassword/', async (req, res) => {
     try {
-        const { email } = req.params;
+        const { email } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
             throw new Error('User not found');

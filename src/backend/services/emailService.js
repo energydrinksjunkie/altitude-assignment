@@ -20,7 +20,7 @@ async function sendVerificationEmail(user) {
     
         const verificationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
         // const verificationLink = `${process.env.BASE_URL}/api/users/verify/${verificationToken}`;
-        const resend = `${process.env.BASE_URL}/api/users/resendVerificationEmail/${user.email}`;
+        const resend = `${process.env.FRONTEND_URL}/resendVerificationEmail/${user.email}`;
 
         const emailTemplate = await ejs.renderFile(
         path.join(__dirname, '../templates/verificationEmail.ejs'), 
@@ -45,9 +45,9 @@ async function sendPasswordResetEmail(user) {
     try {
         const passwordResetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '5m' });
     
-        // const passwordResetLink = `${process.env.FRONTEND_URL}/resetPassword/${passwordResetToken}`;
-        const passwordResetLink = `${process.env.BASE_URL}/api//users/forgotPasswordVerify/${passwordResetToken}`;
-        const resend = `${process.env.BASE_URL}/api//users/resendForgotPassword/${user.email}`;
+        const passwordResetLink = `${process.env.FRONTEND_URL}/forgotPasswordCheck/${passwordResetToken}`;
+        // const passwordResetLink = `${process.env.BASE_URL}/api//users/forgotPasswordVerify/${passwordResetToken}`;
+        const resend = `${process.env.FRONTEND_URL}/resendForgotPassword/${user.email}`;
 
         const emailTemplate = await ejs.renderFile(
         path.join(__dirname, '../templates/passwordEmail.ejs'), 
