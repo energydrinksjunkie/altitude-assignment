@@ -6,11 +6,13 @@ import Profile from './components/Profile'
 import EditProfile from './components/EditProfile'
 import Verify2FALogin from './components/Verify2FALogin'
 import Generate2FA from './components/Generate2FA'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
 function App() {
 
   return (
     <>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
      <BrowserRouter>
      <Routes>
       <Route path="/login" element={<Login />} />
@@ -22,6 +24,7 @@ function App() {
       <Route path="/generate2fa" element={<Generate2FA />} />
      </Routes>
      </BrowserRouter>
+     </GoogleOAuthProvider>
     </>
   )
 }

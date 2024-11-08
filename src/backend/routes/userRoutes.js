@@ -10,6 +10,8 @@ const upload = require('../middleware/uploadMiddleware');
 const passport = require('passport');
 const { auth, authAdmin } = require('../middleware/authMiddleware');
 const {sendVerificationEmail, sendPasswordResetEmail, sendTwoFactorCodeEmail} = require('../services/emailService');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 router.post('/register', async (req, res) => {
     try {
@@ -39,6 +41,9 @@ router.post('/login', async (req, res) => {
         if (!user) {
             throw new Error('User not found');
         }
+        if (user.registerSource === 'google') {
+            throw new Error('Please login with Google');
+        }
         const isMatch = await bycrypt.compare(password, user.password);
         if (!isMatch) {
             throw new Error('Invalid credentials');
@@ -49,8 +54,7 @@ router.post('/login', async (req, res) => {
         if (user.isBlocked) {
             throw new Error('User is deleted');
         }
-
-
+        
         if (user.twoFactorEnabled) {
             const tempJwtToken = jwt.sign({ id: user._id, twoFactorAuthRequired: true }, process.env.JWT_SECRET, { expiresIn: '10m' });
 
@@ -72,7 +76,41 @@ router.post('/login', async (req, res) => {
 });
 
 
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.post('/google', async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        console.log(payload);
+
+        let user = await User.findOne({ email: payload.email });
+
+        if (!user) {
+            user = await User.create({
+                firstName: payload.given_name,
+                lastName: payload.family_name,
+                email: payload.email,
+                profilePicture: payload.picture,
+                isVerified: true,
+                password: null,
+                registerSource: 'google',
+            });
+            await user.save();
+        }
+
+        const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        
+        res.status(200).json({ token: jwtToken });
+    } catch (error) {
+        console.error("Error during Google login:", error);
+        res.status(400).json({ error: 'Google authentication failed' });
+    }
+});
 
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), (req, res) => {
     if(req.user.twoFactorEnabled) {

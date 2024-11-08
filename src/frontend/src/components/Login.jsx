@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, TextField, Link, Button, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import GoogleLoginComponent from './GoogleLogin';
 
 function Login() {
 
@@ -83,6 +84,7 @@ function Login() {
                 Login
                 </Button>
             <Link href="/register">Don't have an account?</Link>
+            <GoogleLoginComponent />
         </Box>
     )
 }
