@@ -50,8 +50,6 @@ The backend API, implemented in Node.js, handles user management and security fe
     EMAIL_PASSWORD='your-email-password'
     BASE_URL='http://localhost:3000'
     GOOGLE_CLIENT_ID='your-google-client-id'
-    GOOGLE_CLIENT_SECRET='your-google-client-secret'
-    GOOGLE_CALLBACK_URL='/api/users/google/callback'
     ```
 4. Run the server:
     ```bash

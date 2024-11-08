@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
                 token: tempJwtToken });
         }
 
-        const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const jwtToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ token: jwtToken });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -104,7 +104,7 @@ router.post('/google', async (req, res) => {
             });
             await user.save();
 
-            const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const jwtToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
             return res.status(200).json({ token: jwtToken });
         }
 
@@ -126,7 +126,7 @@ router.post('/google', async (req, res) => {
         }
 
         
-        const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const jwtToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
         res.status(200).json({ token: jwtToken });
     } catch (error) {
@@ -185,7 +185,7 @@ router.get('/users', auth, authAdmin, async (req, res) => {
     const { isVerified, name, fromDate, toDate } = req.query;
     
     try {
-        let query = {};
+        let query = { isBlocked: false };
 
         if (isVerified === 'true') {
             query.isVerified = isVerified;
@@ -377,7 +377,7 @@ router.post('/verifyTwoFactorAuth', auth, async (req, res) => {
             return res.status(200).json({ message: 'Two factor authentication enabled successfully' });
         }
 
-        const tokenJwt = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const tokenJwt = jwt.sign({ id: req.user._id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
         return res.status(200).json({ message: 'Two factor authentication verified successfully', token: tokenJwt });
 
     } catch (error) {
