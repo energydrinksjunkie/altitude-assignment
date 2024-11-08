@@ -131,4 +131,4 @@ dist
 
 # user profile pictures
 
-uploads/*
+src/public/uploads/*

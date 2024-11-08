@@ -7,7 +7,6 @@ const path = require('path');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const upload = require('../middleware/uploadMiddleware');
-const passport = require('passport');
 const { auth, authAdmin } = require('../middleware/authMiddleware');
 const {sendVerificationEmail, sendPasswordResetEmail, sendTwoFactorCodeEmail} = require('../services/emailService');
 const { OAuth2Client } = require('google-auth-library');
@@ -65,7 +64,10 @@ router.post('/login', async (req, res) => {
                 await user.save();
             }
 
-            return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true, token: tempJwtToken });
+            return res.status(200).json({ 
+                message: 'Two factor authentication required', 
+                twoFactorAuthRequired: true, 
+                token: tempJwtToken });
         }
 
         const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -79,7 +81,6 @@ router.post('/login', async (req, res) => {
 router.post('/google', async (req, res) => {
     try {
         const { token } = req.body;
-
         const ticket = await client.verifyIdToken({
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID,
@@ -99,10 +100,32 @@ router.post('/google', async (req, res) => {
                 isVerified: true,
                 password: null,
                 registerSource: 'google',
+                twoFactorEnabled: false,
             });
             await user.save();
+
+            const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            return res.status(200).json({ token: jwtToken });
         }
 
+        if (user.twoFactorEnabled) {
+            const tempJwtToken = jwt.sign({ id: user._id, twoFactorAuthRequired: true }, process.env.JWT_SECRET, { expiresIn: '10m' });
+
+            if (user.twoFactorMethod === 'email') {
+                const code = Math.floor(100000 + Math.random() * 900000);
+                user.twoFactorSecret = code.toString();
+                await sendTwoFactorCodeEmail(user, code);
+                await user.save();
+            }
+
+            return res.status(200).json({ 
+                message: 'Two factor authentication required', 
+                twoFactorAuthRequired: true, 
+                token: tempJwtToken
+            });
+        }
+
+        
         const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
         res.status(200).json({ token: jwtToken });
@@ -110,14 +133,6 @@ router.post('/google', async (req, res) => {
         console.error("Error during Google login:", error);
         res.status(400).json({ error: 'Google authentication failed' });
     }
-});
-
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), (req, res) => {
-    if(req.user.twoFactorEnabled) {
-        return res.status(200).json({ message: 'Two factor authentication required', twoFactorAuthRequired: true });
-    }
-    const token = jwt.sign( { id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token: token });
 });
 
 router.post('/uploadProfilePicture', auth, upload, async (req, res) => {
