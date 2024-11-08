@@ -185,38 +185,62 @@ router.get('/users', auth, authAdmin, async (req, res) => {
     const { isVerified, name, fromDate, toDate } = req.query;
     
     try {
-        let query = { isBlocked: false };
-
+        let query = [{ $match: { isBlocked: false, role: { $ne: 'admin' } } }];
+    
         if (isVerified === 'true') {
-            query.isVerified = isVerified;
+            query[0].$match.isVerified = true;
         } else if (isVerified === 'false') {
-            query.isVerified = false;
+            query[0].$match.isVerified = false;
         }
 
         if (name) {
-            query.$or = [
-                { firstName: { $regex: name, $options: 'i' } },
-                { lastName: { $regex: name, $options: 'i' } }
-            ];
+            query.push({
+                $match: {
+                    $or: [
+                        {
+                            $expr: {
+                                $regexMatch: {
+                                    input: { $concat: ["$firstName", " ", "$lastName"] },
+                                    regex: name,
+                                    options: 'i'
+                                }
+                            }
+                        }
+                    ]
+                }
+            });
         }
 
         if (fromDate || toDate) {
-            query.dateOfBirth = {};
+            query.push({
+                $match: {
+                    dateOfBirth: {}
+                }
+            });
             if (fromDate) {
-                query.dateOfBirth.$gte = new Date(fromDate);
+                query[query.length - 1].$match.dateOfBirth.$gte = new Date(fromDate);
             }
             if (toDate) {
-                query.dateOfBirth.$lte = new Date(toDate);
+                query[query.length - 1].$match.dateOfBirth.$lte = new Date(toDate);
             }
         }
 
-        const users = await User.find(query).select('-password -twoFactorSecret');
+        query.push({
+            $project: {
+                password: 0, 
+                twoFactorSecret: 0, 
+                __v: 0, 
+            }
+        });
+
+        const users = await User.aggregate(query);
 
         res.status(200).json(users);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 router.delete('/deleteUser/:id', auth, authAdmin, async (req, res) => {
     try {
