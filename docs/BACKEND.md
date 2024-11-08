@@ -137,3 +137,11 @@
 - **Response**: 
   - `200 OK`: 2FA disabled successfully.
   - `400 Bad Request`: Error disabling 2FA.
+
+# API Endpoints - /
+
+## GET /uploads/:filename
+- **Description**: Retrieve the user's profile picture from the `uploads` directory.
+- **Response**:
+  - `200 OK`: Profile picture retrieved successfully.
+  - `404 Not Found`: Profile picture not found.
