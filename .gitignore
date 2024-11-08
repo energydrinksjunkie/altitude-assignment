@@ -132,4 +132,3 @@ dist
 # user profile pictures
 
 uploads/*
-!uploads/default.png
