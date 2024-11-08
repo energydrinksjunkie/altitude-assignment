@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
         if (user.isBlocked) {
             throw new Error('User is deleted');
         }
-        
+
         if (user.twoFactorEnabled) {
             const tempJwtToken = jwt.sign({ id: user._id, twoFactorAuthRequired: true }, process.env.JWT_SECRET, { expiresIn: '10m' });
 
@@ -122,7 +122,7 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
 
 router.post('/uploadProfilePicture', auth, upload, async (req, res) => {
     try {
-        req.user.profilePicture = req.file.path;
+        req.user.profilePicture = `/uploads/${req.file.filename}`;
         await req.user.save();
         res.status(200).json({ message: 'Profile picture uploaded successfully' });
     } catch (error) {
@@ -160,7 +160,7 @@ router.put('/updateProfile', auth, async (req, res) => {
 
 router.get('/getProfile', auth, async (req, res) => {
     try {
-        res.status(200).json({ firstName: req.user.firstName, lastName: req.user.lastName, email: req.user.email, dateOfBirth: req.user.dateOfBirth, profilePicture: req.user.profilePicture, twoFactorEnabled: req.user.twoFactorEnabled });
+        res.status(200).json({ firstName: req.user.firstName, lastName: req.user.lastName, email: req.user.email, dateOfBirth: req.user.dateOfBirth, profilePicture: process.env.BASE_URL + req.user.profilePicture, twoFactorEnabled: req.user.twoFactorEnabled });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
