@@ -40,6 +40,9 @@ const Navbar = () => {
                     </Typography>
                 </Box>
                 <Box>
+                <Button color="inherit" onClick={() => navigate('/')}>
+                                Home
+                            </Button>
                     {isLoggedIn ? (
                         <>
                             <Button color="inherit" onClick={handleProfile}>

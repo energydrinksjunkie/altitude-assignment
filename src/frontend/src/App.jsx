@@ -15,6 +15,7 @@ import ResendForgotPassword from './components/ResendForgotPassword'
 import ResendVerificationEmail from './components/ResendVerificationEmail'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { AuthGuard } from './utils/AuthGuard'
 
 const darkTheme = createTheme({
   palette: {
@@ -35,10 +36,10 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify/:token" element={<Verify />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/editProfile" element={<EditProfile />} />
+      <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
+      <Route path="/editProfile" element={<AuthGuard><EditProfile /></AuthGuard>} />
       <Route path="/verify2fa" element={<Verify2FALogin />} />
-      <Route path="/generate2fa" element={<Generate2FA />} />
+      <Route path="/generate2fa" element={<AuthGuard><Generate2FA /></AuthGuard>} />
       <Route path="/forgotPasswordCheck/:token" element={<VerifyForgotPassword />} />
       <Route path="/resetPassword" element={<ResetPassword />} />
       <Route path="/forgotPassword" element={<ForgotPassword />} />
