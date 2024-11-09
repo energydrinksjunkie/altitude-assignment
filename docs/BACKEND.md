@@ -1,147 +1,283 @@
-# API Endpoints - /api/users
+# Backend API Documentation
 
-## POST /register
-- **Description**: Register a new user.
-- **Request Body**:
-  - `firstName`: User's first name
-  - `lastName`: User's last name
-  - `email`: User's email
-  - `password`: User's password
-  - `dateOfBirth`: User's date of birth
-- **Response**: 
-  - `201 Created`: User created successfully and verification email sent.
-  - `400 Bad Request`: Validation or other errors.
+All API routes are prefixed with `/api/users/` except for `/upload/:fileName`, which is used to serve user profile pictures from the static folder.
 
-## POST /login
-- **Description**: User login with email, password, and an optional 2FA token.
-- **Request Body**:
-  - `email`: User's email
-  - `password`: User's password
-  - `token`: Optional 2FA token
-- **Response**: 
-  - `200 OK`: JWT token.
-  - `400 Bad Request`: Invalid credentials or other errors.
+## Table of Contents
+- [Auth Routes](#auth-routes)
+- [User Management Routes](#user-management-routes)
+- [Two-Factor Authentication (2FA) Routes](#two-factor-authentication-2fa-routes)
 
-## GET /google
-- **Description**: Redirect to Google OAuth login.
-- **Response**: Redirect to Google OAuth.
+---
 
-## GET /google/callback
-- **Description**: Google OAuth callback to authenticate the user.
-- **Response**: 
-  - `200 OK`: JWT token.
-  - `401 Unauthorized`: If authentication fails.
+## Auth Routes
 
-## POST /uploadProfilePicture
-- **Description**: Upload a new profile picture.
-- **Request Body**: Multipart file upload
-- **Response**: 
-  - `200 OK`: Profile picture uploaded successfully.
-  - `400 Bad Request`: File upload error.
+### Register
+**POST** `/register`  
+**Request**:  
+Creates a new user and sends a verification email.
 
-## POST /changePassword
-- **Description**: Change the user's password.
-- **Request Body**:
-  - `oldPassword`: Current password
-  - `newPassword`: New password
-- **Response**: 
-  - `200 OK`: Password changed successfully.
-  - `400 Bad Request`: Incorrect current password or other errors.
+```json
+{
+  "firstName": "string",
+  "lastName": "string",
+  "email": "string",
+  "password": "string",
+  "dateOfBirth": "YYYY-MM-DD"
+}
+```
 
-## PUT /updateProfile
-- **Description**: Update user's profile details.
-- **Request Body**:
-  - `firstName`: Updated first name
-  - `lastName`: Updated last name
-  - `dateOfBirth`: Updated date of birth
-- **Response**: 
-  - `200 OK`: Profile updated successfully.
-  - `400 Bad Request`: Validation errors.
+**Response**:  
+```json
+{
+  "message": "User created successfully. Check your email."
+}
+```
 
-## GET /getProfile
-- **Description**: Get the user's profile details.
-- **Response**: 
-  - `200 OK`: Profile details.
-  - `400 Bad Request`: Error retrieving profile.
+---
 
-## GET /users (ADMIN)
-- **Description**: Get a list of users with optional filters for verification status, name, and date of birth range.
-- **Query Params**:
-  - `isVerified`: Optional filter (`true` or `false`) to filter users by verification status.
-  - `name`: Optional filter. Can search for users by matching `firstName` or `lastName` (case-insensitive).
-  - `fromDate`: Optional filter. The starting date for the `dateOfBirth` range (format: `YYYY-MM-DD`).
-  - `toDate`: Optional filter. The ending date for the `dateOfBirth` range (format: `YYYY-MM-DD`).
-- **Response**:
-  - `200 OK`: A list of users matching the specified filters, excluding `password` and `twoFactorSecret`.
+### Login
+**POST** `/login`  
+**Request**:  
+Authenticates the user with email and password.
 
-## DELETE /deleteUser/:id (ADMIN)
-- **Description**: Delete a user by ID.
-- **Response**: 
-  - `200 OK`: User deleted successfully.
-  - `400 Bad Request`: User not found or unauthorized action.
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
 
-## GET /verify/:token
-- **Description**: Verify user email with the provided token.
-- **Response**: 
-  - `200 OK`: User verified successfully.
-  - `400 Bad Request`: Invalid or expired token.
+**Response**:  
+```json
+{
+  "message": "Two factor authentication required",
+  "twoFactorAuthRequired": true,
+  "token": "temporaryToken"
+}
+```
 
-## GET /resendVerificationEmail/:email
-- **Description**: Resend verification email to the user.
-- **Response**: 
-  - `200 OK`: Verification email resent successfully.
-  - `400 Bad Request`: User not found or already verified.
+```json
+{
+  "token": "jwtToken"
+}
+```
 
-## GET /forgotPasswordVerify/:token
-- **Description**: Verify the user's forgot password token.
-- **Response**: 
-  - `200 OK`: Token is valid.
-  - `400 Bad Request`: Invalid or expired token.
+---
 
-## GET /resendForgotPassword/:email
-- **Description**: Resend the forgot password reset email.
-- **Response**: 
-  - `200 OK`: Password reset email resent.
-  - `400 Bad Request`: User not found.
+### Google Login
+**POST** `/google`  
+**Request**:  
+Authenticates a user through Google.
 
-## POST /forgotPassword
-- **Description**: Reset the user's password.
-- **Request Body**:
-  - `password`: New password
-- **Response**: 
-  - `200 OK`: Password reset successfully.
-  - `400 Bad Request`: Validation errors.
+```json
+{
+  "token": "googleIdToken"
+}
+```
 
-## GET /generateTwoFactorAuthApp
-- **Description**: Generate a 2FA QR code for an authenticator app.
-- **Response**: 
-  - `200 OK`: QR code for 2FA setup.
-  - `400 Bad Request`: Error generating QR code.
+**Response**:  
+```json
+{
+  "token": "jwtToken"
+}
+```
 
-## GET /generateTwoFactorAuthEmail
-- **Description**: Generate a 2FA code sent via email.
-- **Response**: 
-  - `200 OK`: 2FA code sent successfully.
-  - `400 Bad Request`: Error generating 2FA code.
+---
 
-## POST /verifyTwoFactorAuth
-- **Description**: Verify the 2FA token.
-- **Request Body**:
-  - `token`: 2FA token
-- **Response**: 
-  - `200 OK`: 2FA verified successfully.
-  - `400 Bad Request`: Invalid token.
+## User Management Routes
 
-## GET /disableTwoFactorAuth
-- **Description**: Disable two-factor authentication for the user.
-- **Response**: 
-  - `200 OK`: 2FA disabled successfully.
-  - `400 Bad Request`: Error disabling 2FA.
+### Upload Profile Picture
+**POST** `/uploadProfilePicture`  
+**Request**:  
+Uploads a new profile picture.
 
-# API Endpoints - /
+```json
+{
+  "profilePicture": "file"
+}
+```
 
-## GET /uploads/:filename
-- **Description**: Retrieve the user's profile picture from the `uploads` directory.
-- **Response**:
-  - `200 OK`: Profile picture retrieved successfully.
-  - `404 Not Found`: Profile picture not found.
+**Response**:  
+```json
+{
+  "message": "Profile picture uploaded successfully"
+}
+```
+
+---
+
+### Change Password
+**POST** `/changePassword`  
+**Request**:  
+Allows a user to change their password.
+
+```json
+{
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+
+**Response**:  
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+
+---
+
+### Update Profile
+**PUT** `/updateProfile`  
+**Request**:  
+Updates user's profile details.
+
+```json
+{
+  "firstName": "string",
+  "lastName": "string",
+  "dateOfBirth": "YYYY-MM-DD"
+}
+```
+
+**Response**:  
+```json
+{
+  "message": "Profile updated successfully"
+}
+```
+
+---
+
+### Get Profile
+**GET** `/getProfile`  
+**Request**:  
+Retrieves user's profile information.
+
+**Response**:  
+```json
+{
+  "firstName": "string",
+  "lastName": "string",
+  "email": "string",
+  "dateOfBirth": "YYYY-MM-DD",
+  "profilePicture": "string",
+  "twoFactorEnabled": "boolean"
+}
+```
+
+---
+
+### Get Users (Admin)
+**GET** `/users`  
+**Request**:  
+Retrieves a list of non-admin users (admin access required).
+
+Optional query parameters:
+- `isVerified` (optional): Filter by verification status.
+- `name` (optional): Search by name.
+- `fromDate` and `toDate` (optional): Filter by date of birth range.
+
+**Response**:  
+```json
+[
+  {
+    "firstName": "string",
+    "lastName": "string",
+    "email": "string",
+    "dateOfBirth": "YYYY-MM-DD"
+  }
+]
+```
+
+---
+
+### Delete User (Admin)
+**DELETE** `/deleteUser/:id`  
+**Request**:  
+Marks a user as blocked (admin access required).
+
+**Response**:  
+```json
+{
+  "message": "User deleted successfully"
+}
+```
+
+---
+
+## Profile Picture Retrieval
+
+### Get Profile Picture
+**GET** `/upload/:fileName`  
+**Request**:  
+Retrieves a user's profile picture from the static folder.
+
+**Response**:  
+```json
+{
+  "profilePicture": "image file"
+}
+```
+
+---
+
+## Two-Factor Authentication (2FA) Routes
+
+### Enable 2FA
+**POST** `/enable2FA`  
+**Request**:  
+Enables two-factor authentication for the user.
+
+```json
+{
+  "message": "Two-factor authentication enabled successfully"
+}
+```
+
+**Response**:  
+```json
+{
+  "message": "Two-factor authentication enabled successfully"
+}
+```
+
+---
+
+### Verify 2FA
+**POST** `/verify2FA`  
+**Request**:  
+Verifies the 2FA code sent to the user.
+
+```json
+{
+  "code": "string"
+}
+```
+
+**Response**:  
+```json
+{
+  "message": "2FA verification successful"
+}
+```
+
+---
+
+### Disable 2FA
+**POST** `/disable2FA`  
+**Request**:  
+Disables two-factor authentication for the user.
+
+```json
+{
+  "message": "Two-factor authentication disabled successfully"
+}
+```
+
+**Response**:  
+```json
+{
+  "message": "Two-factor authentication disabled successfully"
+}
+```
