@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
 
-const Welcome = () => {
+const WelcomeDefault = () => {
     return (
         <Box 
             display="flex" 
@@ -12,13 +12,13 @@ const Welcome = () => {
             textAlign="center"
         >
             <Typography variant="h4" color='primary'>
-                Welcome!
+                Welcome to Altitude Task!
             </Typography>
             <Typography variant="body1" color="textSecondary">
-                You're logged in.
+                Log in or create an account to get started.
             </Typography>
         </Box>
     );
 };
 
-export default Welcome;
+export default WelcomeDefault;

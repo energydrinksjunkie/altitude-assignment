@@ -32,7 +32,11 @@ const Navbar = () => {
     };
 
     return (
-        <AppBar position="sticky">
+        <AppBar position="sticky" sx={
+            {
+                backgroundColor: 'black',
+            }
+        }>
             <Toolbar>
                 <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" component="div" sx={{ cursor: 'pointer' }} onClick={() => navigate('/')}>

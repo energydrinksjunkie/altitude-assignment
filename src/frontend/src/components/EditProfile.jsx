@@ -178,7 +178,7 @@ function EditProfile() {
         >
           <Avatar
             src={profile.profilePicture || '/default-avatar.png'}
-            sx={{ width: 100, height: 100, mb: 2 }}
+            sx={{ width: 100, height: 100, mb: 2, border: '2px solid', borderColor: 'primary.main' }}
           />
           <Button
             variant="outlined"
@@ -221,7 +221,11 @@ function EditProfile() {
             onChange={(e) => setProfile({ ...profile, dateOfBirth: e.target.value })}
             sx={{ mb: 2 }}
             fullWidth
-            InputLabelProps={{ shrink: true }}
+            slotProps={{
+              inputLabel: {
+              shrink: true,
+              }
+          }}
           />
           <Button
             variant="outlined"

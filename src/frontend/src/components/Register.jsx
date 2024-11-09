@@ -154,6 +154,11 @@ function Register() {
           value={dateOfBirth}
           onChange={(e) => setDateOfBirth(e.target.value)}
           fullWidth
+          slotProps={{
+            inputLabel: {
+            shrink: true,
+            }
+        }}
         />
 
         <TextField

@@ -1,13 +1,14 @@
 import React from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Welcome from './Welcome';
+import WelcomeDefault from './WelcomeDefault';
 import UsersList from './UsersList';
 
 const Home = () => {
     const token = localStorage.getItem('token');
     
     if (!token) {
-        return <p>Please create an account to continue!</p>;
+        return <WelcomeDefault />;
     }
 
     try {

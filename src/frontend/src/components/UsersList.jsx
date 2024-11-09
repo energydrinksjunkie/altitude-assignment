@@ -92,13 +92,13 @@ const UsersList = () => {
 
     return (
         <Box sx={{ color: '#fff', backgroundColor: '#121212', p: 3, borderRadius: 2, 
-            mx: 'auto', mt: 1
+            mx: 'auto', mt: 4
         }}>
             <Typography variant="h4" gutterBottom>
                 Users List
             </Typography>
 
-            <Box display="flex" gap={2} mb={2}>
+            <Box display="flex" gap={2} mb={2} minHeight={4}>
                 <TextField
                     label="Search by name"
                     variant="outlined"
@@ -106,34 +106,21 @@ const UsersList = () => {
                     value={filters.name}
                     onChange={handleFilterChange}
                     fullWidth
-                    InputProps={{ style: { color: '#fff' } }}
-                    sx={{
-                        '.MuiOutlinedInput-root': {
-                            '& fieldset': { borderColor: '#424242' },
-                            '&:hover fieldset': { borderColor: '#616161' },
-                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
-                        },
-                        '& .MuiInputLabel-root': { color: '#90caf9' }
-                    }}
                 />
                 <TextField
-                    label="From Date"
-                    variant="outlined"
-                    type="date"
-                    name="fromDate"
-                    value={filters.fromDate}
-                    onChange={handleFilterChange}
-                    fullWidth
-                    InputProps={{ style: { color: '#fff' } }}
-                    sx={{
-                        '.MuiOutlinedInput-root': {
-                            '& fieldset': { borderColor: '#424242' },
-                            '&:hover fieldset': { borderColor: '#616161' },
-                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
-                        },
-                        '& .MuiInputLabel-root': { color: '#90caf9' }
-                    }}
-                />
+            label="From Date"
+            variant="outlined"
+            type="date"
+            name="fromDate"
+            value={filters.fromDate}
+            onChange={handleFilterChange}
+            fullWidth
+            slotProps={{
+                inputLabel: {
+                shrink: true,
+                }
+            }}
+        />
                 <TextField
                     label="To Date"
                     variant="outlined"
@@ -142,14 +129,10 @@ const UsersList = () => {
                     value={filters.toDate}
                     onChange={handleFilterChange}
                     fullWidth
-                    InputProps={{ style: { color: '#fff' } }}
-                    sx={{
-                        '.MuiOutlinedInput-root': {
-                            '& fieldset': { borderColor: '#424242' },
-                            '&:hover fieldset': { borderColor: '#616161' },
-                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
-                        },
-                        '& .MuiInputLabel-root': { color: '#90caf9' }
+                    slotProps={{
+                        inputLabel: {
+                        shrink: true,
+                        }
                     }}
                 />
                 <TextField
@@ -160,17 +143,13 @@ const UsersList = () => {
                     value={filters.isVerified}
                     onChange={handleFilterChange}
                     fullWidth
-                    SelectProps={{
-                        native: true,
-                    }}
-                    InputProps={{ style: { color: '#fff' } }}
-                    sx={{
-                        '.MuiOutlinedInput-root': {
-                            '& fieldset': { borderColor: '#424242' },
-                            '&:hover fieldset': { borderColor: '#616161' },
-                            '&.Mui-focused fieldset': { borderColor: '#90caf9' },
+                    slotProps={{
+                        select: {
+                            native: true,
                         },
-                        '& .MuiInputLabel-root': { color: '#90caf9' }
+                        inputLabel: {
+                            shrink: true,
+                        }
                     }}
                 >
                     <option value="">All</option>
