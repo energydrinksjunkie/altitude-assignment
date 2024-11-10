@@ -99,8 +99,15 @@ function EditProfile() {
     }
   };
 
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
   const handlePasswordChange = async () => {
     const token = localStorage.getItem('token');
+
+    if (!passwordRegex.test(newPassword)) {
+      showSnackbar('Password must be at least 8 characters long, with one uppercase, one lowercase, one number, and one special character.', 'error');
+      return;
+    }
 
     try {
       await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/changePassword`, {

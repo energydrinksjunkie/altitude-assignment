@@ -20,11 +20,22 @@ function Register() {
 
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  const nameRegex = /^[A-Za-z]{2,}$/; // Only letters, at least 2 characters
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    if (!nameRegex.test(firstName)) {
+      showSnackbar('First name must contain only letters and be at least 2 characters', 'error');
+      return;
+    }
+
+    if (!nameRegex.test(lastName)) {
+      showSnackbar('Last name must contain only letters and be at least 2 characters', 'error');
+      return;
+    }
 
     if (!emailRegex.test(email)) {
       setError('Invalid email format');
