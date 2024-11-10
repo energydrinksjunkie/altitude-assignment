@@ -179,7 +179,10 @@ router.put('/updateProfile', auth, async (req, res) => {
 
 router.get('/getProfile', auth, async (req, res) => {
     try {
-        res.status(200).json({ firstName: req.user.firstName, lastName: req.user.lastName, email: req.user.email, dateOfBirth: req.user.dateOfBirth, profilePicture: process.env.BASE_URL + req.user.profilePicture, twoFactorEnabled: req.user.twoFactorEnabled });
+        const profilePicture = req.user.profilePicture.startsWith("https")
+    ? req.user.profilePicture
+    : process.env.BASE_URL + req.user.profilePicture;
+        res.status(200).json({ firstName: req.user.firstName, lastName: req.user.lastName, email: req.user.email, dateOfBirth: req.user.dateOfBirth, profilePicture: profilePicture, twoFactorEnabled: req.user.twoFactorEnabled });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
